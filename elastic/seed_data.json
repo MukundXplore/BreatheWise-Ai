@@ -1,0 +1,75 @@
+[
+  {
+    "condition": "Asthma",
+    "aqi": "Severe",
+    "symptom": "Any",
+    "recommendation": "Avoid all outdoor physical activity. Keep emergency inhalers within reach. Stay in a room with an air purifier running. Seek medical help if breathing difficulty increases.",
+    "source": "WHO & CPCB Asthma Advisory"
+  },
+  {
+    "condition": "Asthma",
+    "aqi": "Very Poor",
+    "symptom": "Wheezing",
+    "recommendation": "Limit outdoor exposure strictly. If you must go outside, wear an N95 respirator. Keep your quick-relief inhaler handy.",
+    "source": "CPCB Respiratory Guidelines"
+  },
+  {
+    "condition": "Asthma",
+    "aqi": "Poor",
+    "symptom": "Cough",
+    "recommendation": "Reduce strenuous outdoor activities. Monitor symptoms like coughing or wheezing. Shift exercise sessions indoors.",
+    "source": "Indian Chest Society Advisory"
+  },
+  {
+    "condition": "COPD",
+    "aqi": "Severe",
+    "symptom": "Chest Tightness",
+    "recommendation": "Strictly remain indoors. Ensure oxygen therapy equipment (if prescribed) is functional. Contact pulmonologist immediately if chest tightness or shortness of breath worsens.",
+    "source": "Global Initiative for Chronic Obstructive Lung Disease (GOLD) Delhi Guide"
+  },
+  {
+    "condition": "COPD",
+    "aqi": "Very Poor",
+    "symptom": "Shortness of Breath",
+    "recommendation": "Avoid outdoor movement. Keep doors and windows closed. Avoid cooking methods that generate smoke (incense, frying) inside the house.",
+    "source": "GOLD Guidelines for Severe Air Pollution"
+  },
+  {
+    "condition": "COPD",
+    "aqi": "Poor",
+    "symptom": "Cough",
+    "recommendation": "Minimize exposure to heavy traffic areas in Delhi. Wear N95 mask outside. Ensure routine maintenance medicines are taken regularly.",
+    "source": "Delhi Health Advisory"
+  },
+  {
+    "condition": "Bronchitis",
+    "aqi": "Severe",
+    "symptom": "Sputum Production",
+    "recommendation": "Stay in clean, temperature-controlled indoor environments. Use warm saline steam inhalation. Avoid any exposure to Delhi's smog.",
+    "source": "CPCB Bronchitis Bulletin"
+  },
+  {
+    "condition": "General",
+    "aqi": "Severe",
+    "recommendation": "Avoid outdoor physical exertion, especially in the early morning and late evening. Wear N95 masks for mandatory travel. Children, pregnant women, and the elderly should remain indoors.",
+    "source": "WHO Clean Air Delhi Guide"
+  },
+  {
+    "condition": "General",
+    "aqi": "Very Poor",
+    "recommendation": "Limit prolonged outdoor activities. Use public transport or carpool to reduce further emissions. Wear N95 masks when visiting high-traffic spots.",
+    "source": "CPCB Air Quality Bulletin"
+  },
+  {
+    "condition": "General",
+    "aqi": "Poor",
+    "recommendation": "People with sensitive airways may experience discomfort. Consider wearing a mask if spending long hours outdoors. Keep active children indoors when pollution peaks.",
+    "source": "Delhi Pollution Control Committee"
+  },
+  {
+    "condition": "General",
+    "aqi": "Moderate",
+    "recommendation": "Air quality is acceptable. However, unusually sensitive individuals should monitor their symptoms and limit heavy outdoor exertion.",
+    "source": "CPCB Standard Guide"
+  }
+]
