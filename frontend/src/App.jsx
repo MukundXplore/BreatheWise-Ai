@@ -1,4 +1,39 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+
+// Lightweight markdown-to-HTML renderer (no extra deps)
+function renderMarkdown(text) {
+  if (!text) return '';
+  return text
+    // Escape HTML entities first
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    // Bold: **text** or __text__
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/__(.+?)__/g, '<strong>$1</strong>')
+    // Italic: *text* or _text_
+    .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+    .replace(/_([^_]+)_/g, '<em>$1</em>')
+    // Inline code: `code`
+    .replace(/`([^`]+)`/g, '<code style="background:rgba(0,0,0,0.2);padding:1px 5px;border-radius:3px;font-size:0.82em">$1</code>')
+    // Headers: ## heading
+    .replace(/^### (.+)$/gm, '<h4 style="margin:6px 0 2px;font-size:0.88em">$1</h4>')
+    .replace(/^## (.+)$/gm, '<h3 style="margin:8px 0 4px;font-size:0.95em">$1</h3>')
+    .replace(/^# (.+)$/gm, '<h2 style="margin:8px 0 4px;font-size:1.05em">$1</h2>')
+    // Numbered lists: 1. item
+    .replace(/^\d+\.\s+(.+)$/gm, '<li style="margin:2px 0">$1</li>')
+    // Bullet lists: - item or * item
+    .replace(/^[-*]\s+(.+)$/gm, '<li style="margin:2px 0">$1</li>')
+    // Wrap consecutive <li> in <ul>
+    .replace(/((?:<li[^>]*>.*<\/li>\n?)+)/g, '<ul style="margin:4px 0;padding-left:18px">$1</ul>')
+    // Horizontal rules
+    .replace(/^---+$/gm, '<hr style="border:none;border-top:1px solid rgba(255,255,255,0.2);margin:8px 0">')
+    // Line breaks (double newline = paragraph break)
+    .replace(/\n\n/g, '</p><p style="margin:6px 0">')
+    // Single newline
+    .replace(/\n/g, '<br>')
+    // Wrap in paragraph
+    .replace(/^/, '<p style="margin:0">')
+    .replace(/$/, '</p>');
+}
 import './App.css';
 
 const translations = {
@@ -184,9 +219,55 @@ function App() {
   const [searchResults, setSearchResults] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
 
+  // Knowledge RAG Chat State (Elastic → Gemini conversation)
+  const [kbChatHistory, setKbChatHistory] = useState([]);
+  const [kbChatInput, setKbChatInput] = useState('');
+  const [kbChatLoading, setKbChatLoading] = useState(false);
+  const kbChatEndRef = useRef(null);
+
+  useEffect(() => {
+    if (kbChatEndRef.current) {
+      kbChatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [kbChatHistory, kbChatLoading]);
+
+  const handleKnowledgeChat = async (e) => {
+    if (e) e.preventDefault();
+    if (!kbChatInput.trim() || kbChatLoading) return;
+
+    const userMsg = { sender: 'user', text: kbChatInput };
+    setKbChatHistory(prev => [...prev, userMsg]);
+    setKbChatInput('');
+    setKbChatLoading(true);
+
+    try {
+      const res = await fetch('http://localhost:8000/api/knowledge-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: userMsg.text,
+          history: kbChatHistory,
+          condition: condition || null
+        })
+      });
+      if (!res.ok) throw new Error(`Server ${res.status}`);
+      const data = await res.json();
+      const sources = data.sources && data.sources.length > 0
+        ? '\n\n---\n📚 **Sources:** ' + data.sources.map(s => `${s.source} — ${s.condition}`).join(', ')
+        : '';
+      setKbChatHistory(prev => [...prev, { sender: 'model', text: data.response + sources }]);
+    } catch (err) {
+      setKbChatHistory(prev => [...prev, { sender: 'model', text: 'Error: Could not reach the knowledge server.' }]);
+    } finally {
+      setKbChatLoading(false);
+    }
+  };
+
   // Chatbot Agent State
   const [chatOpen, setChatOpen] = useState(false);
   const [chatInput, setChatInput] = useState('');
+  const chatEndRef = useRef(null);
+  const chatContainerRef = useRef(null);
   const [chatHistory, setChatHistory] = useState([
     { 
       sender: 'model', 
@@ -210,6 +291,13 @@ function App() {
       return prev;
     });
   }, [lang]);
+
+  // Auto-scroll chat to bottom on new messages
+  useEffect(() => {
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [chatHistory, chatLoading]);
 
   const handleSendChatMessage = async (e) => {
     if (e) e.preventDefault();
@@ -878,6 +966,75 @@ function App() {
               </div>
             )}
           </div>
+
+          {/* RAG Conversational Q&A Panel */}
+          <div className="kb-chat-panel glass-panel">
+            <div className="kb-chat-panel-header">
+              <span className="pulse-dot" style={{ marginRight: '8px' }}></span>
+              <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>
+                🧠 {lang === 'EN' ? 'Ask the Knowledge Base' : 'नॉलेज बेस से पूछें'}
+              </span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginLeft: '8px' }}>
+                {lang === 'EN' ? '— Elastic + Gemini RAG' : '— इलास्टिक + जेमिनी RAG'}
+              </span>
+              {kbChatHistory.length > 0 && (
+                <button 
+                  onClick={() => setKbChatHistory([])}
+                  style={{ marginLeft: 'auto', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.75rem' }}
+                >
+                  {lang === 'EN' ? 'Clear' : 'साफ़ करें'}
+                </button>
+              )}
+            </div>
+
+            {kbChatHistory.length === 0 && (
+              <div className="kb-chat-starter">
+                <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+                  {lang === 'EN'
+                    ? '💡 Ask any respiratory health question. Elasticsearch retrieves the relevant guidelines and Gemini answers with citations.'
+                    : '💡 कोई भी श्वसन स्वास्थ्य प्रश्न पूछें। Elasticsearch प्रासंगिक दिशानिर्देश प्राप्त करेगा और Gemini उद्धरण के साथ उत्तर देगा।'
+                  }
+                </p>
+                <div className="kb-quick-questions">
+                  {['What should COPD patients do in severe AQI?', 'Which mask is best for PM2.5?', 'Safe AQI for children outdoors?'].map((q, i) => (
+                    <button key={i} className="kb-quick-btn" onClick={() => { setKbChatInput(q); }}>{q}</button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="kb-chat-messages">
+              {kbChatHistory.map((msg, i) => (
+                <div key={i} className={`kb-chat-bubble ${msg.sender}`}>
+                  {msg.sender === 'user'
+                    ? <div className="kb-bubble-text">{msg.text}</div>
+                    : <div className="kb-bubble-text markdown-body" dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.text) }} />
+                  }
+                </div>
+              ))}
+              {kbChatLoading && (
+                <div className="kb-chat-bubble model loading">
+                  <span className="loading-dot">.</span>
+                  <span className="loading-dot">.</span>
+                  <span className="loading-dot">.</span>
+                </div>
+              )}
+              <div ref={kbChatEndRef} />
+            </div>
+
+            <form onSubmit={handleKnowledgeChat} className="kb-chat-input-row">
+              <input
+                type="text"
+                className="input-field kb-chat-input-field"
+                placeholder={lang === 'EN' ? 'Ask a follow-up or new question...' : 'अनुवर्ती या नया प्रश्न पूछें...'}
+                value={kbChatInput}
+                onChange={(e) => setKbChatInput(e.target.value)}
+                disabled={kbChatLoading}
+              />
+              <button type="submit" className="action-sub-btn kb-chat-send-btn" disabled={kbChatLoading}>➤</button>
+            </form>
+          </div>
+
         </div>
       )}
 
@@ -1029,12 +1186,16 @@ function App() {
             <button className="chat-close-btn" onClick={() => setChatOpen(false)}>✕</button>
           </div>
 
-          <div className="chat-messages-container">
+          <div className="chat-messages-container" ref={chatContainerRef}>
             {chatHistory.map((msg, i) => (
               <div key={i} className={`chat-message-bubble ${msg.sender}`}>
-                <div className="chat-bubble-text">{msg.text}</div>
+                {msg.sender === 'user' 
+                  ? <div className="chat-bubble-text">{msg.text}</div>
+                  : <div className="chat-bubble-text markdown-body" dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.text) }} />
+                }
               </div>
             ))}
+            <div ref={chatEndRef} />
             {chatLoading && (
               <div className="chat-message-bubble model loading">
                 <span className="loading-dot">.</span>

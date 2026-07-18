@@ -412,5 +412,45 @@ def chat_agent():
     response_text = ai_service.generate_chat_response(query, history)
     return jsonify({"response": response_text})
 
+@app.route("/api/knowledge-chat", methods=["POST"])
+def knowledge_chat():
+    """
+    RAG Knowledge Chat endpoint.
+    1. Searches Elasticsearch for relevant docs based on the user's question
+    2. Builds context from retrieved hits
+    3. Sends context + conversation history to Gemini for a grounded answer
+    """
+    payload = request.json or {}
+    query = payload.get("query")
+    history = payload.get("history", [])
+    condition = payload.get("condition")  # optional topic filter
+
+    if not query:
+        abort(400, description="Missing 'query' parameter")
+
+    # Step 1: Retrieve relevant docs from Elasticsearch
+    context_docs = elastic_service.search_guidelines(
+        condition=condition,
+        text_query=query
+    )
+
+    # Step 2: Generate grounded response via Gemini
+    response_text = ai_service.generate_knowledge_chat_response(
+        query=query,
+        context_docs=context_docs,
+        history=history
+    )
+
+    return jsonify({
+        "response": response_text,
+        "sources": [
+            {
+                "source": d.get("source", ""),
+                "title": d.get("title", ""),
+                "condition": d.get("condition", "")
+            } for d in context_docs[:3]
+        ]
+    })
+
 if __name__ == "__main__":
     app.run(port=8000, debug=True)

@@ -24,7 +24,7 @@ class AIService:
             try:
                 system_instruction = (
                     "You are BreatheWise AI, an expert Respiratory Health Assistant specialized in Delhi's air quality challenges.\n"
-                    "Your role is to assess user health risks under current AQI conditions based ONLY on retrieved medical and health guidelines. Do not diagnose diseases. Provide structured, empathetic, and highly actionable suggestions."
+                    "Your role is to assess user health risks under current AQI conditions. You must prioritize the retrieved guidelines, but you should also utilize general medical consensus and clinical best practices (e.g. from WHO, CPCB, and chest societies) to provide deep, comprehensive, detailed, and highly actionable safety recommendations. Do not diagnose diseases. Provide structured, empathetic, and clinical-grade suggestions."
                 )
                 
                 prompt = f"""
@@ -57,7 +57,7 @@ JSON Format:
 }}
 """
                 # Prepare direct REST payload for Gemini API
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={self.api_key}"
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent?key={self.api_key}"
                 headers = {"Content-Type": "application/json"}
                 
                 payload = {
@@ -216,7 +216,7 @@ JSON Format:
                     "parts": [{"text": query}]
                 })
                 
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={self.api_key}"
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent?key={self.api_key}"
                 headers = {"Content-Type": "application/json"}
                 
                 payload = {
@@ -238,6 +238,8 @@ JSON Format:
                     if candidates:
                         content_text = candidates[0].get("content", {}).get("parts", [{}])[0].get("text", "").strip()
                         return content_text
+                else:
+                    print(f"Gemini API chat REST call failed with status code {res.status_code}: {res.text}")
             except Exception as e:
                 print(f"Gemini API chat generation failed: {e}. Falling back to mock chat.")
                 
@@ -254,3 +256,82 @@ JSON Format:
             return "COPD patients should strictly avoid outdoor exposure when the AQI is Very Poor or Severe. Monitor oxygen levels regularly, take prescribed maintenance medications, and seek emergency help immediately if chest tightness increases."
         else:
             return "Delhi air quality poses significant respiratory risks. I recommend checking real-time PM2.5 levels, staying hydrated, using air purifiers, and consulting a pulmonologist if you experience coughing or shortness of breath."
+
+    def generate_knowledge_chat_response(self, query: str, context_docs: list, history: list = None) -> str:
+        """
+        Generates a grounded conversational response using retrieved Elasticsearch documents as context.
+        This is the RAG knowledge chat — Elastic retrieves, Gemini answers.
+        """
+        # Build context string from retrieved docs
+        context = ""
+        for i, doc in enumerate(context_docs):
+            source = doc.get('source', 'Unknown')
+            title = doc.get('title', '')
+            condition = doc.get('condition', '')
+            content = doc.get('recommendation', doc.get('content', ''))
+            if content:
+                context += f"[Source {i+1}: {source} | {condition} | {title}]\n{content}\n\n"
+
+        if not context:
+            context = "No specific guidelines retrieved. Use general clinical knowledge."
+
+        if self.is_active:
+            try:
+                system_instruction = (
+                    "You are BreatheWise AI Knowledge Assistant — an expert in Delhi air quality, respiratory diseases, and public health.\n"
+                    "You answer questions based PRIMARILY on the retrieved medical guidelines provided as context. "
+                    "You may supplement with general medical knowledge when the context is insufficient. "
+                    "Be conversational, structured, and always actionable. Cite the sources when relevant. "
+                    "Support follow-up questions using the conversation history provided."
+                )
+
+                # Build conversation history for multi-turn
+                formatted_contents = []
+                if history:
+                    for msg in history:
+                        role = "user" if msg.get("sender") == "user" else "model"
+                        formatted_contents.append({
+                            "role": role,
+                            "parts": [{"text": msg.get("text", "")}]
+                        })
+
+                # Attach context + current query
+                query_with_context = f"""Retrieved Knowledge Base Context:
+{context}
+
+User Question: {query}
+
+Answer based on the context above. If the context directly addresses the question, cite it. Support follow-up questions naturally."""
+
+                formatted_contents.append({
+                    "role": "user",
+                    "parts": [{"text": query_with_context}]
+                })
+
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent?key={self.api_key}"
+                headers = {"Content-Type": "application/json"}
+
+                payload = {
+                    "contents": formatted_contents,
+                    "systemInstruction": {"parts": [{"text": system_instruction}]},
+                    "generationConfig": {"temperature": 0.5}
+                }
+
+                res = requests.post(url, headers=headers, json=payload, timeout=10)
+                if res.status_code == 200:
+                    data = res.json()
+                    candidates = data.get("candidates", [])
+                    if candidates:
+                        return candidates[0].get("content", {}).get("parts", [{}])[0].get("text", "").strip()
+                else:
+                    print(f"Gemini API knowledge-chat REST call failed with status code {res.status_code}: {res.text}")
+            except Exception as e:
+                print(f"Knowledge chat generation failed: {e}. Falling back to mock.")
+
+        # Fallback: construct a basic answer from context docs
+        if context_docs:
+            recs = [d.get('recommendation', '') for d in context_docs if d.get('recommendation')]
+            if recs:
+                return "Based on the retrieved guidelines:\n\n" + "\n".join(f"• {r}" for r in recs[:4])
+        return "I couldn't find specific guidelines for your query. Please try rephrasing or expanding your search."
+

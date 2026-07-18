@@ -38,11 +38,19 @@ def setup_indexes():
     # Check connection
     try:
         if not es.ping():
-            print("Elasticsearch is not reachable. Ensure the server is running or credentials are correct.")
+            print("\n" + "="*80)
+            print("ERROR: Elasticsearch is not reachable.")
+            print("1. If using Elastic Cloud Serverless, make sure ELASTIC_URL is set in backend/.env")
+            print("   Example: ELASTIC_URL=https://your-serverless-id.es.us-east-1.aws.elastic.cloud")
+            print("2. If running locally, ensure local Elasticsearch is running at http://localhost:9200")
+            print("="*80 + "\n")
             return False
         print("Connected to Elasticsearch successfully.")
     except Exception as e:
+        print("\n" + "="*80)
         print(f"Connection failed: {e}")
+        print("Please check your ELASTIC_URL and ELASTIC_API_KEY in backend/.env")
+        print("="*80 + "\n")
         return False
 
     indexes = ["health_guidelines", "respiratory_guidelines", "aqi_data"]

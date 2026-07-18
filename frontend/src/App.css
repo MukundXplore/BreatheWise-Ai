@@ -992,6 +992,121 @@
   background: rgba(15, 23, 42, 0.05);
 }
 
+/* ========= Knowledge RAG Chat Panel ========= */
+.kb-chat-panel {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+  border-top: 2px solid var(--accent-color);
+}
+
+.kb-chat-panel-header {
+  display: flex;
+  align-items: center;
+  padding: 1rem 1.2rem;
+  border-bottom: 1px solid var(--border-color);
+  background: rgba(59, 130, 246, 0.06);
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.kb-chat-starter {
+  padding: 1rem 1.2rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.kb-quick-questions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.kb-quick-btn {
+  background: rgba(59, 130, 246, 0.12);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: var(--accent-color);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Outfit', sans-serif;
+}
+
+.kb-quick-btn:hover {
+  background: var(--accent-color);
+  color: #fff;
+}
+
+.kb-chat-messages {
+  min-height: 80px;
+  max-height: 380px;
+  overflow-y: auto;
+  padding: 1rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.kb-chat-bubble {
+  max-width: 88%;
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  word-wrap: break-word;
+}
+
+.kb-chat-bubble.user {
+  background: var(--accent-color);
+  color: #fff;
+  align-self: flex-end;
+  border-bottom-right-radius: 2px;
+}
+
+.kb-chat-bubble.model {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  align-self: flex-start;
+  border-bottom-left-radius: 2px;
+}
+
+.theme-light .kb-chat-bubble.model {
+  background: rgba(15, 23, 42, 0.04);
+}
+
+.kb-bubble-text {
+  text-align: left;
+}
+
+.kb-chat-input-row {
+  display: flex;
+  padding: 0.9rem 1.2rem;
+  gap: 8px;
+  border-top: 1px solid var(--border-color);
+}
+
+.kb-chat-input-field {
+  flex: 1;
+  padding: 8px 12px !important;
+  font-size: 0.85rem !important;
+}
+
+.kb-chat-send-btn {
+  padding: 8px 16px !important;
+  font-size: 0.95rem !important;
+}
+
+.kb-chat-bubble.loading {
+  display: flex;
+  gap: 4px;
+}
+
 /* Floating Chatbot FAB button */
 .chat-fab-btn {
   position: fixed;
@@ -1118,6 +1233,53 @@
 
 .chat-bubble-text {
   text-align: left;
+}
+
+/* Markdown rendered content in AI chat bubbles */
+.chat-bubble-text.markdown-body p {
+  margin: 0 0 6px;
+  line-height: 1.55;
+}
+
+.chat-bubble-text.markdown-body p:last-child {
+  margin-bottom: 0;
+}
+
+.chat-bubble-text.markdown-body ul {
+  margin: 4px 0;
+  padding-left: 18px;
+}
+
+.chat-bubble-text.markdown-body li {
+  margin: 3px 0;
+  line-height: 1.5;
+}
+
+.chat-bubble-text.markdown-body strong {
+  font-weight: 700;
+  color: inherit;
+}
+
+.chat-bubble-text.markdown-body em {
+  font-style: italic;
+}
+
+.chat-bubble-text.markdown-body h2,
+.chat-bubble-text.markdown-body h3,
+.chat-bubble-text.markdown-body h4 {
+  margin: 8px 0 4px;
+  font-weight: 700;
+  color: inherit;
+}
+
+.chat-bubble-text.markdown-body hr {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  margin: 8px 0;
+}
+
+.theme-light .chat-bubble-text.markdown-body hr {
+  border-top-color: rgba(0, 0, 0, 0.12);
 }
 
 .chat-input-row {
