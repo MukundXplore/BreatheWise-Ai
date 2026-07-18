@@ -13,10 +13,24 @@ ELASTIC_URL = os.getenv("ELASTIC_URL", "http://localhost:9200")
 def get_elastic_client():
     if ELASTIC_CLOUD_ID and ELASTIC_API_KEY:
         print("Connecting to Elastic Cloud...")
-        return Elasticsearch(cloud_id=ELASTIC_CLOUD_ID, api_key=ELASTIC_API_KEY)
-    else:
-        print(f"Connecting to Local Elasticsearch at {ELASTIC_URL}...")
-        return Elasticsearch(ELASTIC_URL)
+        es = Elasticsearch(cloud_id=ELASTIC_CLOUD_ID, api_key=ELASTIC_API_KEY)
+        try:
+            if es.ping():
+                return es
+        except Exception:
+            pass
+            
+    if ELASTIC_API_KEY:
+        print(f"Connecting to Elasticsearch at {ELASTIC_URL} with API Key...")
+        es = Elasticsearch(ELASTIC_URL, api_key=ELASTIC_API_KEY)
+        try:
+            if es.ping():
+                return es
+        except Exception:
+            print("API Key connection failed. Trying without authentication...")
+            
+    print(f"Connecting to Local Elasticsearch at {ELASTIC_URL}...")
+    return Elasticsearch(ELASTIC_URL)
 
 def setup_indexes():
     es = get_elastic_client()

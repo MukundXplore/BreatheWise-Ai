@@ -1,66 +1,92 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --bg-dark: #0f1319;
-  --bg-card: rgba(22, 28, 38, 0.7);
-  --border-color: rgba(255, 255, 255, 0.08);
+  --bg-dark: #080b10;
+  --bg-card: rgba(17, 24, 39, 0.7);
+  --border-color: rgba(255, 255, 255, 0.05);
   --accent-color: #3b82f6;
   
-  --risk-high: #ef4444;
-  --risk-high-glow: rgba(239, 68, 68, 0.35);
-  --risk-medium: #f59e0b;
-  --risk-medium-glow: rgba(245, 158, 11, 0.35);
-  --risk-low: #10b981;
-  --risk-low-glow: rgba(16, 185, 129, 0.35);
+  --risk-high: #f87171;
+  --risk-high-glow: rgba(248, 113, 113, 0.25);
+  --risk-medium: #fbbf24;
+  --risk-medium-glow: rgba(251, 191, 36, 0.25);
+  --risk-low: #34d399;
+  --risk-low-glow: rgba(52, 211, 153, 0.25);
   
-  --text-primary: #f3f4f6;
-  --text-secondary: #9ca3af;
-  --text-muted: #6b7280;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #64748b;
+  
+  --gradient-bg: radial-gradient(circle at 50% 0%, #17253d 0%, #080b10 80%);
   
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   color: var(--text-primary);
   background-color: var(--bg-dark);
 }
 
+.theme-light {
+  --bg-dark: #f1f5f9;
+  --bg-card: rgba(255, 255, 255, 0.85);
+  --border-color: rgba(15, 23, 42, 0.06);
+  --accent-color: #1d4ed8;
+  
+  --risk-high: #dc2626;
+  --risk-high-glow: rgba(220, 38, 38, 0.15);
+  --risk-medium: #d97706;
+  --risk-medium-glow: rgba(217, 119, 6, 0.15);
+  --risk-low: #059669;
+  --risk-low-glow: rgba(5, 150, 105, 0.15);
+  
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  
+  --gradient-bg: radial-gradient(circle at 50% 0%, #e2e8f0 0%, #f1f5f9 85%);
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  transition: all 0.25s ease;
+  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 body {
   overflow-x: hidden;
-  background: radial-gradient(circle at 50% 0%, #1c2738 0%, #0f1319 70%);
+  background: var(--gradient-bg);
   min-height: 100vh;
 }
 
 /* Glassmorphism Styles */
 .glass-panel {
   background: var(--bg-card);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border-color);
-  border-radius: 16px;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  border-radius: 20px;
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.3);
 }
 
 .glass-panel:hover {
-  border-color: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.45);
+  border-color: rgba(59, 130, 246, 0.25);
+  box-shadow: 0 15px 50px -10px rgba(59, 130, 246, 0.15);
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
 }
 ::-webkit-scrollbar-track {
   background: var(--bg-dark);
 }
 ::-webkit-scrollbar-thumb {
-  background: #2a3447;
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+  border: 2px solid var(--bg-dark);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3b82f6;
+  background: var(--accent-color);
 }

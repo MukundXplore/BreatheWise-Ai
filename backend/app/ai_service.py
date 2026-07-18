@@ -188,3 +188,69 @@ JSON Format:
             "hospital": hospital,
             "doctor": doctor
         }
+
+    def generate_chat_response(self, query: str, history: list = None) -> str:
+        """
+        Generates a chatbot response based on user query and history.
+        """
+        if self.is_active:
+            try:
+                system_instruction = (
+                    "You are BreatheWise AI, an expert Respiratory Health Assistant specialized in Delhi's air quality challenges.\n"
+                    "Your role is to answer questions about respiratory health, air quality indices (AQI), PM2.5, PM10, and safety precautions. Keep your responses highly actionable, friendly, and structured. Do not diagnose diseases."
+                )
+                
+                # Format conversation history
+                formatted_contents = []
+                if history:
+                    for msg in history:
+                        role = "user" if msg.get("sender") == "user" else "model"
+                        formatted_contents.append({
+                            "role": role,
+                            "parts": [{"text": msg.get("text", "")}]
+                        })
+                
+                # Add current user query
+                formatted_contents.append({
+                    "role": "user",
+                    "parts": [{"text": query}]
+                })
+                
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={self.api_key}"
+                headers = {"Content-Type": "application/json"}
+                
+                payload = {
+                    "contents": formatted_contents,
+                    "systemInstruction": {
+                        "parts": [{
+                            "text": system_instruction
+                        }]
+                    },
+                    "generationConfig": {
+                        "temperature": 0.7
+                    }
+                }
+                
+                res = requests.post(url, headers=headers, json=payload, timeout=8)
+                if res.status_code == 200:
+                    data = res.json()
+                    candidates = data.get("candidates", [])
+                    if candidates:
+                        content_text = candidates[0].get("content", {}).get("parts", [{}])[0].get("text", "").strip()
+                        return content_text
+            except Exception as e:
+                print(f"Gemini API chat generation failed: {e}. Falling back to mock chat.")
+                
+        # Mock LLM Chat response
+        return self._generate_mock_chat_response(query)
+
+    def _generate_mock_chat_response(self, query: str) -> str:
+        q = query.lower()
+        if "asthma" in q:
+            return "For asthma under high AQI conditions in Delhi, it is critical to limit outdoor activities, wear an N95 respirator mask during necessary travel, keep a quick-relief inhaler handy, and run HEPA-grade air purifiers indoors."
+        elif "mask" in q or "n95" in q:
+            return "N95 masks are highly effective in filtering out PM2.5 and PM10 particles. Standard surgical or cloth masks do not provide adequate protection against Delhi's winter smog. Ensure a snug fit around your nose and mouth."
+        elif "copd" in q:
+            return "COPD patients should strictly avoid outdoor exposure when the AQI is Very Poor or Severe. Monitor oxygen levels regularly, take prescribed maintenance medications, and seek emergency help immediately if chest tightness increases."
+        else:
+            return "Delhi air quality poses significant respiratory risks. I recommend checking real-time PM2.5 levels, staying hydrated, using air purifiers, and consulting a pulmonologist if you experience coughing or shortness of breath."

@@ -643,3 +643,534 @@
   padding: 3rem 0;
   font-size: 1rem;
 }
+
+/* Mobile Responsiveness Improvements (< 520px) */
+@media (max-width: 520px) {
+  .app-container {
+    padding: 1rem 0.75rem;
+  }
+  .app-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+    margin-bottom: 1.5rem;
+  }
+  .app-header > div {
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px !important;
+  }
+  .nav-tabs {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .tab-btn {
+    flex: 1;
+    text-align: center;
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+  .lang-switcher {
+    align-self: flex-end;
+  }
+  .dashboard-grid {
+    gap: 1.25rem;
+  }
+  .form-card {
+    padding: 1.25rem;
+  }
+  .aqi-bar-container {
+    padding: 1rem !important;
+  }
+  .aqi-value-text {
+    font-size: 2.2rem !important;
+  }
+  .risk-glow-circle {
+    width: 70px !important;
+    height: 70px !important;
+    font-size: 0.9rem !important;
+  }
+  .action-btn-row {
+    flex-direction: column;
+    gap: 8px !important;
+  }
+  .action-sub-btn {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+  .search-box-row {
+    flex-direction: column;
+  }
+  .btn-search {
+    padding: 0.8rem !important;
+    width: 100%;
+  }
+}
+
+/* Theme Toggle Button */
+.theme-toggle-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.1rem;
+}
+
+.theme-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--accent-color);
+}
+
+/* Proximity Hospital List items */
+.hospital-item-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 8px;
+}
+
+.hospital-item-card:hover {
+  background: rgba(59, 130, 246, 0.05);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.hospital-item-card.active {
+  background: rgba(59, 130, 246, 0.12);
+  border-color: var(--accent-color);
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.15);
+}
+
+.hospital-item-info {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.hospital-item-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.hospital-item-address {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.hospital-item-distance {
+  background: var(--accent-color);
+  color: #fff;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+/* SOS Dashboard Styles */
+.sos-container {
+  padding: 2.2rem;
+}
+
+.sos-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 2rem;
+  margin-top: 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .sos-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sos-card-red {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 16px;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: 0 8px 32px 0 rgba(239, 68, 68, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.sos-pulsing-btn {
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 2rem;
+  padding: 2rem 3rem;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  animation: sos-glow-pulse 1.8s infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+@keyframes sos-glow-pulse {
+  0% {
+    transform: scale(0.96);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 25px rgba(239, 68, 68, 0);
+  }
+  100% {
+    transform: scale(0.96);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}
+
+.sos-pulsing-btn:hover {
+  background: #dc2626;
+}
+
+.emergency-directory-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 600px) {
+  .emergency-directory-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.emergency-contact-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.emergency-contact-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.emergency-contact-name {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.emergency-contact-phone {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #ef4444;
+  margin-top: 4px;
+}
+
+.emergency-call-icon-btn {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.1rem;
+}
+
+.emergency-call-icon-btn:hover {
+  background: #ef4444;
+  color: #fff;
+  border-color: #ef4444;
+}
+
+.protocol-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.protocol-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.01);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.protocol-icon-warn {
+  color: #f59e0b;
+  font-weight: bold;
+}
+
+/* Premium theme switcher & interactive hovers */
+.theme-toggle-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background-color 0.3s,
+              border-color 0.3s;
+}
+
+.theme-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: rotate(360deg) scale(1.15);
+  border-color: var(--accent-color);
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+}
+
+.theme-light .theme-toggle-btn {
+  background: rgba(15, 23, 42, 0.05);
+}
+
+.theme-light .theme-toggle-btn:hover {
+  background: rgba(15, 23, 42, 0.08);
+}
+
+/* Card hover scaling and transitions */
+.glass-panel {
+  transition: transform 0.35s cubic-bezier(0.25, 0.8, 0.25, 1),
+              border-color 0.35s,
+              box-shadow 0.35s;
+}
+
+.glass-panel:hover {
+  transform: translateY(-4px);
+}
+
+/* Tab button improvements */
+.tab-btn {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  border: 1px solid transparent;
+}
+
+.tab-btn:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+.theme-light .tab-btn:hover:not(.active) {
+  background: rgba(15, 23, 42, 0.05);
+}
+
+/* Floating Chatbot FAB button */
+.chat-fab-btn {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: var(--accent-color);
+  color: #fff;
+  border: none;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  padding: 14px 22px;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 1000;
+  animation: chat-fab-glow-pulse 2s infinite;
+}
+
+@keyframes chat-fab-glow-pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 8px 32px rgba(59, 130, 246, 0.7);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+  }
+}
+
+.chat-fab-btn:hover {
+  transform: translateY(-2px);
+  background: #2563eb;
+}
+
+/* Chat Drawer Panel */
+.chat-drawer-panel {
+  position: fixed;
+  bottom: 5.5rem;
+  right: 2rem;
+  width: 380px;
+  max-height: 520px;
+  height: 80vh;
+  display: flex;
+  flex-direction: column;
+  z-index: 1000;
+  overflow: hidden;
+  animation: drawer-fade-up 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes drawer-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chat-drawer-header {
+  padding: 1.1rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chat-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.chat-close-btn:hover {
+  color: var(--text-primary);
+}
+
+.chat-messages-container {
+  flex: 1;
+  padding: 1.1rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chat-message-bubble {
+  max-width: 80%;
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+.chat-message-bubble.user {
+  background: var(--accent-color);
+  color: #fff;
+  align-self: flex-end;
+  border-bottom-right-radius: 2px;
+}
+
+.chat-message-bubble.model {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  align-self: flex-start;
+  border-bottom-left-radius: 2px;
+}
+
+.theme-light .chat-message-bubble.model {
+  background: rgba(15, 23, 42, 0.04);
+}
+
+.chat-bubble-text {
+  text-align: left;
+}
+
+.chat-input-row {
+  display: flex;
+  padding: 1rem;
+  gap: 8px;
+  border-top: 1px solid var(--border-color);
+}
+
+.chat-input-field {
+  flex: 1;
+  padding: 8px 12px !important;
+  font-size: 0.85rem !important;
+}
+
+.chat-send-btn {
+  padding: 8px 16px !important;
+  font-size: 0.95rem !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Typing dot animation */
+.chat-message-bubble.loading {
+  display: flex;
+  gap: 4px;
+}
+
+.loading-dot {
+  font-size: 1.5rem;
+  line-height: 0.2;
+  animation: dot-glow 1.4s infinite;
+}
+
+.loading-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.loading-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes dot-glow {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 1; }
+}
+
+@media (max-width: 480px) {
+  .chat-drawer-panel {
+    right: 1rem;
+    left: 1rem;
+    width: auto;
+  }
+}
+

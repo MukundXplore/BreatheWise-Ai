@@ -71,5 +71,35 @@
     "aqi": "Moderate",
     "recommendation": "Air quality is acceptable. However, unusually sensitive individuals should monitor their symptoms and limit heavy outdoor exertion.",
     "source": "CPCB Standard Guide"
+  },
+  {
+    "condition": "Diabetes",
+    "aqi": "Poor",
+    "recommendation": "High pollution levels can increase insulin resistance and systemic inflammation. Diabetic patients should monitor blood glucose levels more frequently and avoid exercising outdoors when AQI exceeds 150.",
+    "source": "Endocrine Society & Respiratory Joint Advisory"
+  },
+  {
+    "condition": "General",
+    "aqi": "Very Poor",
+    "recommendation": "During peak winter smog (November to February), avoid early morning walks when ground-level ozone and particulate matter concentration are highest. Shift outdoor walks to sunny afternoons.",
+    "source": "Delhi Government Winter Action Plan"
+  },
+  {
+    "condition": "General",
+    "aqi": "Moderate",
+    "recommendation": "Reduce indoor air pollution by avoiding the use of incense sticks (agarbatti), candles, and wood stoves. Ensure proper kitchen ventilation with chimneys or exhaust fans when cooking.",
+    "source": "Ministry of Health Indoor Air Quality Guide"
+  },
+  {
+    "condition": "General",
+    "aqi": "Severe",
+    "recommendation": "Children under 12 and senior citizens over 70 should strictly stay indoors. Avoid physical exertion. Ensure air purifiers are running in bedrooms and common spaces.",
+    "source": "Indian Academy of Pediatrics & Geriatric Advisory"
+  },
+  {
+    "condition": "General",
+    "aqi": "Severe",
+    "recommendation": "Under GRAP Stage IV emergency protocols, all outdoor physical activity in schools is suspended. Citizens are advised to work from home if possible, use public transport, and report open burning immediately.",
+    "source": "CPCB GRAP Stage IV Mandate"
   }
 ]
