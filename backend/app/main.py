@@ -5,8 +5,9 @@ import math
 from flask import Flask, request, jsonify, abort
 from dotenv import load_dotenv
 
-# Load env variables
-load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '../.env'))
+# Compute absolute path to .env file in the backend root
+env_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.env'))
+load_dotenv(dotenv_path=env_path)
 
 from app.elastic_service import ElasticService
 from app.ai_service import AIService
@@ -207,6 +208,7 @@ def fetch_delhi_weather_and_aqi(location: str) -> dict:
     live_aqi = None
     pm2_5 = 0.0
     pm10 = 0.0
+    historical_trend = None
     
     if waqi_token:
         # Try WAQI
@@ -243,17 +245,34 @@ def fetch_delhi_weather_and_aqi(location: str) -> dict:
                 "weather_desc": weather_desc,
                 "weather_code": w_code
             }
+    except Exception as e:
+        print(f"Open-Meteo weather fetch failed: {e}.")
+
+    try:
+        # Always fetch Open-Meteo AQI to get historical trend
+        aqi_url = f"https://air-quality-api.open-meteo.com/v1/air-quality?latitude={lat}&longitude={lon}&current=us_aqi,pm2_5,pm10&hourly=us_aqi&past_days=6&timezone=Asia/Kolkata"
+        aqi_res = requests.get(aqi_url, timeout=3)
+        if aqi_res.status_code == 200:
+            a_data = aqi_res.json()
             
-        # Fetch AQI from Open-Meteo if not already retrieved via WAQI/OpenWeather
-        if live_aqi is None:
-            aqi_url = f"https://air-quality-api.open-meteo.com/v1/air-quality?latitude={lat}&longitude={lon}&current=us_aqi,pm2_5,pm10&timezone=Asia/Kolkata"
-            aqi_res = requests.get(aqi_url, timeout=3)
-            if aqi_res.status_code == 200:
-                a_data = aqi_res.json().get("current", {})
-                live_aqi = int(a_data.get("us_aqi", random.randint(150, 350)))
-                pm2_5 = a_data.get("pm2_5", 0.0)
-                pm10 = a_data.get("pm10", 0.0)
+            # If live AQI is not provided by previous APIs, use this
+            if live_aqi is None:
+                current_data = a_data.get("current", {})
+                live_aqi = int(current_data.get("us_aqi", random.randint(150, 350)))
+                pm2_5 = current_data.get("pm2_5", 0.0)
+                pm10 = current_data.get("pm10", 0.0)
                 print("Successfully fetched AQI from Open-Meteo Air Quality API.")
+                
+            # Extract historical trend
+            hourly_aqi = a_data.get("hourly", {}).get("us_aqi", [])
+            if hourly_aqi:
+                trend_list = []
+                for i in range(0, len(hourly_aqi), 24):
+                    chunk = hourly_aqi[i:i+24]
+                    valid_chunk = [x for x in chunk if x is not None]
+                    if valid_chunk:
+                        trend_list.append(round(sum(valid_chunk) / len(valid_chunk)))
+                historical_trend = trend_list[:7]
     except Exception as e:
         print(f"Open-Meteo weather/aqi fetch failed: {e}.")
 
@@ -263,7 +282,8 @@ def fetch_delhi_weather_and_aqi(location: str) -> dict:
             "aqi": live_aqi,
             "pm2_5": pm2_5,
             "pm10": pm10,
-            "weather": weather_info
+            "weather": weather_info,
+            "trend": historical_trend
         }
 
     # Simulation fallback (if everything fails)
@@ -297,7 +317,8 @@ def fetch_delhi_weather_and_aqi(location: str) -> dict:
             "wind": simulated_wind,
             "weather_desc": "Haze (Simulated)",
             "weather_code": 45
-        }
+        },
+        "trend": None
     }
 
 @app.route("/", methods=["GET"])
@@ -323,6 +344,7 @@ def get_aqi():
         "pm2_5": data["pm2_5"],
         "pm10": data["pm10"],
         "weather": data["weather"],
+        "trend": data.get("trend"),
         "nearby_hospitals": closest_hospitals
     })
 
@@ -394,6 +416,7 @@ def assess_respiratory_health():
             "pm2_5": data["pm2_5"],
             "pm10": data["pm10"],
             "weather": data["weather"],
+            "trend": data.get("trend"),
             "nearby_hospitals": closest_hospitals
         })
         

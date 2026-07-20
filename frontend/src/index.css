@@ -2,45 +2,88 @@
 
 :root {
   --bg-dark: #080b10;
-  --bg-card: rgba(17, 24, 39, 0.7);
-  --border-color: rgba(255, 255, 255, 0.05);
-  --accent-color: #3b82f6;
-  
+  --bg-card: rgba(15, 23, 42, 0.85);
+  --bg-card-hover: rgba(30, 41, 59, 0.85);
+  --bg-subcard: rgba(30, 41, 59, 0.6);
+  --border-color: rgba(255, 255, 255, 0.12);
+  --border-color-hover: rgba(96, 165, 250, 0.4);
+
+  --accent-color: #38bdf8;
+  --accent-glow: rgba(56, 189, 248, 0.25);
+
   --risk-high: #f87171;
-  --risk-high-glow: rgba(248, 113, 113, 0.25);
   --risk-medium: #fbbf24;
-  --risk-medium-glow: rgba(251, 191, 36, 0.25);
   --risk-low: #34d399;
-  --risk-low-glow: rgba(52, 211, 153, 0.25);
-  
+
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
-  --text-muted: #64748b;
-  
-  --gradient-bg: radial-gradient(circle at 50% 0%, #17253d 0%, #080b10 80%);
-  
+  --text-muted: #94a3b8;
+
+  /* ==========================================================================
+     GRAPH & CHART VARIABLES (DARK MODE - ELECTRIC BLUE)
+     ========================================================================== */
+  --chart-bar: #3b82f6;
+  /* Vibrant primary blue for graph bars */
+  --chart-bar-hover: #60a5fa;
+  /* Glowing sky blue on hover */
+  --chart-line: #38bdf8;
+  /* Bright cyan-blue trend line */
+  --chart-grid: rgba(255, 255, 255, 0.08);
+  /* Subtle grid contrast */
+  --chart-axis: #94a3b8;
+  /* Readable axis ticks */
+  --chart-tooltip-bg: #0f172a;
+  /* Dark tooltip surface */
+  --chart-tooltip-text: #f8fafc;
+
+  --gradient-bg: radial-gradient(circle at 50% 0%, #17253d 0%, #080b10 85%);
+
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   color: var(--text-primary);
   background-color: var(--bg-dark);
 }
 
+/* ==========================================================================
+   LIGHT MODE OVERRIDES
+   ========================================================================== */
 .theme-light {
-  --bg-dark: #f1f5f9;
-  --bg-card: rgba(255, 255, 255, 0.85);
-  --border-color: rgba(15, 23, 42, 0.06);
+  --bg-dark: #f8fafc;
+  --bg-card: rgba(255, 255, 255, 0.95);
+  --bg-card-hover: #ffffff;
+  --bg-subcard: #f1f5f9;
+  --border-color: rgba(15, 23, 42, 0.12);
+  --border-color-hover: rgba(29, 78, 216, 0.35);
+
   --accent-color: #1d4ed8;
-  
+  --accent-glow: rgba(29, 78, 216, 0.15);
+
   --risk-high: #dc2626;
-  --risk-high-glow: rgba(220, 38, 38, 0.15);
   --risk-medium: #d97706;
-  --risk-medium-glow: rgba(217, 119, 6, 0.15);
   --risk-low: #059669;
-  --risk-low-glow: rgba(5, 150, 105, 0.15);
-  
+
   --text-primary: #0f172a;
+  /* Deep slate - maximum readability */
   --text-secondary: #334155;
+  /* Dark grey for paragraph body */
   --text-muted: #64748b;
-  
+
+  /* ==========================================================================
+     GRAPH & CHART VARIABLES (LIGHT MODE - DEEP SAPPHIRE BLUE)
+     ========================================================================== */
+  --chart-bar: #2563eb;
+  /* Rich sapphire blue for bars */
+  --chart-bar-hover: #1d4ed8;
+  /* Deep blue on hover */
+  --chart-line: #0284c7;
+  /* Ocean blue trend line */
+  --chart-grid: rgba(15, 23, 42, 0.1);
+  /* Soft dark grid */
+  --chart-axis: #475569;
+  /* High-contrast axis label text */
+  --chart-tooltip-bg: #ffffff;
+  /* White tooltip container */
+  --chart-tooltip-text: #0f172a;
+
   --gradient-bg: radial-gradient(circle at 50% 0%, #e2e8f0 0%, #f1f5f9 85%);
 }
 
@@ -48,45 +91,115 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 body {
   overflow-x: hidden;
   background: var(--gradient-bg);
   min-height: 100vh;
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Glassmorphism Styles */
+/* Glassmorphism Outer Panel */
 .glass-panel {
-  background: var(--bg-card);
+  background: var(--bg-card) !important;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-color) !important;
   border-radius: 20px;
-  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.08);
+  color: var(--text-primary) !important;
 }
 
-.glass-panel:hover {
-  border-color: rgba(59, 130, 246, 0.25);
-  box-shadow: 0 15px 50px -10px rgba(59, 130, 246, 0.15);
+/* ==========================================================================
+   DIRECT COMPONENT FIXES FOR LIGHT MODE
+   ========================================================================== */
+
+/* 1. Personalized Recommendations Items Fix */
+.theme-light [class*="recommendation"],
+.theme-light .glass-panel ol>li,
+.theme-light .glass-panel ul>li {
+  background-color: #eff6ff !important;
+  /* Soft high-contrast light blue */
+  border: 1px solid rgba(59, 130, 246, 0.25) !important;
+  color: #1e293b !important;
+  /* Dark charcoal readable text */
+  font-weight: 500;
 }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 10px;
+.theme-light [class*="recommendation"] span,
+.theme-light .glass-panel ol>li span {
+  color: #1d4ed8 !important;
+  /* Vibrant blue for step numbers */
+  font-weight: 700;
 }
-::-webkit-scrollbar-track {
-  background: var(--bg-dark);
+
+/* 2. Healthcare Assistance Navigation Card Fix */
+.theme-light [class*="healthcare"],
+.theme-light [class*="navigation"],
+.theme-light [class*="hospital"] {
+  background-color: #ffffff !important;
+  /* Pure white background in Light mode */
+  border: 1px solid rgba(15, 23, 42, 0.15) !important;
+  color: #0f172a !important;
 }
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 5px;
-  border: 2px solid var(--bg-dark);
+
+/* Hospital items inside Navigation */
+.theme-light [class*="hospital"]>div,
+.theme-light [class*="hospital-item"] {
+  background-color: #f8fafc !important;
+  border: 1px solid rgba(15, 23, 42, 0.1) !important;
+  color: #0f172a !important;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-color);
+
+/* 3. Form Inputs & Symptoms Checkboxes */
+.theme-light input,
+.theme-light select,
+.theme-light label {
+  color: #0f172a !important;
+}
+
+.theme-light input[type="text"],
+.theme-light input[type="number"],
+.theme-light select {
+  background-color: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.2) !important;
+  color: #0f172a !important;
+}
+
+/* 4. Language Switcher (EN / HI) */
+.theme-light [class*="lang"],
+.theme-light [class*="toggle"] {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid rgba(15, 23, 42, 0.2) !important;
+}
+
+/* 5. Force SVG/Canvas Graph Elements to Blue Variables */
+svg rect[class*="bar"],
+svg path[class*="bar"],
+.recharts-bar-rectangle path,
+.recharts-rectangle {
+  fill: var(--chart-bar) !important;
+  transition: fill 0.3s ease;
+}
+
+svg rect[class*="bar"]:hover,
+.recharts-bar-rectangle path:hover {
+  fill: var(--chart-bar-hover) !important;
+}
+
+.recharts-line-curve,
+svg path[class*="line"] {
+  stroke: var(--chart-line) !important;
+}
+
+.recharts-cartesian-grid-line {
+  stroke: var(--chart-grid) !important;
+}
+
+.recharts-text,
+svg text {
+  fill: var(--chart-axis) !important;
 }

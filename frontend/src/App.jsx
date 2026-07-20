@@ -21,7 +21,7 @@ function renderMarkdown(text) {
     // Numbered lists: 1. item
     .replace(/^\d+\.\s+(.+)$/gm, '<li style="margin:2px 0">$1</li>')
     // Bullet lists: - item or * item
-    .replace(/^[-*]\s+(.+)$/gm, '<li style="margin:2px 0">$1</li>')
+    .replace(/^[-*•]\s+(.+)$/gm, '<li style="margin:2px 0">$1</li>')
     // Wrap consecutive <li> in <ul>
     .replace(/((?:<li[^>]*>.*<\/li>\n?)+)/g, '<ul style="margin:4px 0;padding-left:18px">$1</ul>')
     // Horizontal rules
@@ -33,8 +33,17 @@ function renderMarkdown(text) {
     // Wrap in paragraph
     .replace(/^/, '<p style="margin:0">')
     .replace(/$/, '</p>');
+
+  // Also replace standard bullet characters if any remain
+  html = html.replace(/<p>• (.*?)<\/p>/g, '<ul><li>$1</li></ul>');
+  html = html.replace(/<br \/>• /g, '</li><li>');
+  html = html.replace(/<\/ul><br \/>/g, '</ul>');
+
+  return html;
 }
 import './App.css';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 const translations = {
   EN: {
@@ -175,7 +184,7 @@ function App() {
   const [activeTab, setActiveTab] = useState('assess'); // 'assess' or 'search'
   const [lang, setLang] = useState('EN'); // 'EN' or 'HI'
   const t = translations[lang];
-  
+
   // Theme and proximity hospital states
   const [theme, setTheme] = useState('dark');
   const [nearbyHospitals, setNearbyHospitals] = useState([]);
@@ -186,7 +195,7 @@ function App() {
   const [condition, setCondition] = useState('Asthma');
   const [selectedSymptoms, setSelectedSymptoms] = useState(['Cough', 'Wheezing']);
   const [location, setLocation] = useState('Delhi');
-  
+
   // Debounced age state to avoid excessive backend requests
   const [debouncedAge, setDebouncedAge] = useState(age);
 
@@ -213,6 +222,7 @@ function App() {
   const [weather, setWeather] = useState(null);
   const [pm25, setPm25] = useState(null);
   const [pm10, setPm10] = useState(null);
+  const [aqiTrend, setAqiTrend] = useState(null);
 
   // Search Engine State
   const [searchQuery, setSearchQuery] = useState('');
@@ -220,16 +230,16 @@ function App() {
   const [searchLoading, setSearchLoading] = useState(false);
 
   // Knowledge RAG Chat State (Elastic → Gemini conversation)
-  const [kbChatHistory, setKbChatHistory] = useState([]);
   const [kbChatInput, setKbChatInput] = useState('');
+  const [kbChatHistory, setKbChatHistory] = useState([
+    { sender: 'model', text: lang === 'EN' ? "Hi! I'm the BreatheWise KnowledgeBase. What would you like to know from our clinical guidelines?" : "नमस्ते! मैं नॉलेज बेस एआई हूं। आप हमारे नैदानिक ​​दिशानिर्देशों से क्या जानना चाहेंगे?" }
+  ]);
   const [kbChatLoading, setKbChatLoading] = useState(false);
   const kbChatEndRef = useRef(null);
 
   useEffect(() => {
-    if (kbChatEndRef.current) {
-      kbChatEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [kbChatHistory, kbChatLoading]);
+    kbChatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [kbChatHistory, activeTab]);
 
   const handleKnowledgeChat = async (e) => {
     if (e) e.preventDefault();
@@ -241,7 +251,7 @@ function App() {
     setKbChatLoading(true);
 
     try {
-      const res = await fetch('http://localhost:8000/api/knowledge-chat', {
+      const res = await fetch(`${API_BASE_URL}/api/knowledge-chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -252,12 +262,13 @@ function App() {
       });
       if (!res.ok) throw new Error(`Server ${res.status}`);
       const data = await res.json();
-      const sources = data.sources && data.sources.length > 0
-        ? '\n\n---\n📚 **Sources:** ' + data.sources.map(s => `${s.source} — ${s.condition}`).join(', ')
-        : '';
-      setKbChatHistory(prev => [...prev, { sender: 'model', text: data.response + sources }]);
+      setKbChatHistory(prev => [...prev, {
+        sender: 'model',
+        text: data.response,
+        sources: data.sources
+      }]);
     } catch (err) {
-      setKbChatHistory(prev => [...prev, { sender: 'model', text: 'Error: Could not reach the knowledge server.' }]);
+      setKbChatHistory(prev => [...prev, { sender: 'model', text: lang === 'EN' ? "Error reaching knowledge base." : "ज्ञानकोष तक पहुंचने में त्रुटि।" }]);
     } finally {
       setKbChatLoading(false);
     }
@@ -269,11 +280,11 @@ function App() {
   const chatEndRef = useRef(null);
   const chatContainerRef = useRef(null);
   const [chatHistory, setChatHistory] = useState([
-    { 
-      sender: 'model', 
-      text: lang === 'EN' 
-        ? "Hello! I am your BreatheWise AI assistant. Ask me anything about Delhi air pollution, respiratory disease care, or mask protocols!" 
-        : "नमस्ते! मैं आपका ब्रीदवाइज एआई सहायक हूं। मुझसे दिल्ली वायु प्रदूषण, श्वसन रोग देखभाल, या मास्क प्रोटोकॉल के बारे में कुछ भी पूछें!" 
+    {
+      sender: 'model',
+      text: lang === 'EN'
+        ? "Hello! I am your BreatheWise AI assistant. Ask me anything about Delhi air pollution, respiratory disease care, or mask protocols!"
+        : "नमस्ते! मैं आपका ब्रीदवाइज एआई सहायक हूं। मुझसे दिल्ली वायु प्रदूषण, श्वसन रोग देखभाल, या मास्क प्रोटोकॉल के बारे में कुछ भी पूछें!"
     }
   ]);
   const [chatLoading, setChatLoading] = useState(false);
@@ -309,7 +320,7 @@ function App() {
     setChatLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8000/api/chat', {
+      const response = await fetch(`${API_BASE_URL}/api/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -363,7 +374,7 @@ function App() {
 
   const fetchLiveAqi = async () => {
     try {
-      const res = await fetch(`http://localhost:8000/api/aqi?location=${encodeURIComponent(location)}`);
+      const res = await fetch(`${API_BASE_URL}/api/aqi?location=${encodeURIComponent(location)}`);
       if (res.ok) {
         const data = await res.json();
         setLiveAqi(data.aqi);
@@ -371,6 +382,7 @@ function App() {
         setWeather(data.weather);
         setPm25(data.pm2_5);
         setPm10(data.pm10);
+        setAqiTrend(data.trend);
         if (data.nearby_hospitals && data.nearby_hospitals.length > 0) {
           setNearbyHospitals(data.nearby_hospitals);
           setSelectedHospital(data.nearby_hospitals[0]);
@@ -395,7 +407,7 @@ function App() {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch('http://localhost:8000/api/assess', {
+        const response = await fetch(`${API_BASE_URL}/api/assess`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -419,6 +431,7 @@ function App() {
         setWeather(data.weather);
         setPm25(data.pm2_5);
         setPm10(data.pm10);
+        setAqiTrend(data.trend);
         if (data.nearby_hospitals && data.nearby_hospitals.length > 0) {
           setNearbyHospitals(data.nearby_hospitals);
           // Only update selected hospital if the current selection is no longer in the new list
@@ -449,7 +462,7 @@ function App() {
     if (e) e.preventDefault();
     setSearchLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/api/search', {
+      const response = await fetch(`${API_BASE_URL}/api/search`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -491,9 +504,9 @@ function App() {
   // Custom SVG Trend Chart
   const renderTrendChart = () => {
     if (liveAqi === null) return null;
-    
+
     const seed = liveAqi || 250;
-    const trendValues = [
+    const trendValues = (aqiTrend && aqiTrend.length === 7) ? aqiTrend : [
       Math.round(seed * 0.85),
       Math.round(seed * 0.92),
       Math.round(seed * 1.05),
@@ -502,45 +515,45 @@ function App() {
       Math.round(seed * 1.02),
       seed
     ];
-    
+
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     const width = 320;
     const height = 120;
     const padding = 20;
     const maxVal = Math.max(...trendValues, 300);
     const minVal = Math.min(...trendValues, 50);
-    
+
     const getX = (index) => padding + (index * (width - padding * 2)) / (trendValues.length - 1);
     const getY = (val) => height - padding - ((val - minVal) * (height - padding * 2)) / (maxVal - minVal || 1);
-    
+
     let pathD = `M ${getX(0)} ${getY(trendValues[0])}`;
     for (let i = 1; i < trendValues.length; i++) {
       pathD += ` L ${getX(i)} ${getY(trendValues[i])}`;
     }
     const areaD = `${pathD} L ${getX(trendValues.length - 1)} ${height - padding} L ${getX(0)} ${height - padding} Z`;
-    
+
     return (
       <div className="glass-panel trend-chart-container" style={{ marginTop: '1.5rem', padding: '1rem' }}>
         <h3 style={{ fontSize: '0.9rem', marginBottom: '12px', color: 'var(--text-light)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 3v18h18" /><path d="m19 9-5 5-4-4-3 3" /></svg>
           {t.trendTitle} ({location.split(',')[0]})
         </h3>
         <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} style={{ overflow: 'visible' }}>
           <defs>
             <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.4" />
-              <stop offset="100%" stopColor="var(--primary)" stopOpacity="0.0" />
+              <stop offset="0%" stopColor="var(--chart-bar)" stopOpacity="0.35" />
+              <stop offset="100%" stopColor="var(--chart-bar)" stopOpacity="0.02" />
             </linearGradient>
           </defs>
-          <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
-          <line x1={padding} y1={padding} x2={width - padding} y2={padding} stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+          <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke="var(--chart-grid)" strokeWidth="1" />
+          <line x1={padding} y1={padding} x2={width - padding} y2={padding} stroke="var(--chart-grid)" strokeWidth="1" strokeDasharray="4 4" />
           <path d={areaD} fill="url(#chartGrad)" />
-          <path d={pathD} fill="none" stroke="var(--primary)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+          <path d={pathD} fill="none" stroke="var(--chart-line)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
           {trendValues.map((val, idx) => (
             <g key={idx}>
-              <circle cx={getX(idx)} cy={getY(val)} r="4" fill="var(--bg-card)" stroke="var(--primary)" strokeWidth="2" />
-              <text x={getX(idx)} y={getY(val) - 8} fill="var(--text-light)" fontSize="9" fontWeight="bold" textAnchor="middle">{val}</text>
-              <text x={getX(idx)} y={height - 4} fill="var(--text-muted)" fontSize="9" textAnchor="middle">{days[idx]}</text>
+              <circle cx={getX(idx)} cy={getY(val)} r="4" fill="var(--bg-card)" stroke="var(--chart-line)" strokeWidth="2" />
+              <text x={getX(idx)} y={getY(val) - 8} fill="var(--chart-axis)" fontSize="9" fontWeight="bold" textAnchor="middle">{val}</text>
+              <text x={getX(idx)} y={height - 4} fill="var(--chart-axis)" fontSize="9" textAnchor="middle">{days[idx]}</text>
             </g>
           ))}
         </svg>
@@ -550,7 +563,7 @@ function App() {
 
   return (
     <div className="app-container">
-      
+
       {/* App Header */}
       <header className="app-header">
         <div className="logo-section">
@@ -563,7 +576,7 @@ function App() {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           {/* Theme Switcher */}
-          <button 
+          <button
             className="theme-toggle-btn"
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             title="Toggle Light/Dark Theme"
@@ -573,14 +586,14 @@ function App() {
 
           {/* Language Switcher */}
           <div className="lang-switcher" style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '20px', padding: '2px' }}>
-            <button 
+            <button
               className={`lang-btn ${lang === 'EN' ? 'active' : ''}`}
               onClick={() => setLang('EN')}
               style={{ border: 'none', background: lang === 'EN' ? 'var(--primary)' : 'transparent', color: '#fff', padding: '4px 10px', borderRadius: '18px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold' }}
             >
               EN
             </button>
-            <button 
+            <button
               className={`lang-btn ${lang === 'HI' ? 'active' : ''}`}
               onClick={() => setLang('HI')}
               style={{ border: 'none', background: lang === 'HI' ? 'var(--primary)' : 'transparent', color: '#fff', padding: '4px 10px', borderRadius: '18px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold' }}
@@ -590,19 +603,19 @@ function App() {
           </div>
 
           <nav className="nav-tabs">
-            <button 
+            <button
               className={`tab-btn ${activeTab === 'assess' ? 'active' : ''}`}
               onClick={() => setActiveTab('assess')}
             >
               {t.healthAssessment}
             </button>
-            <button 
+            <button
               className={`tab-btn ${activeTab === 'search' ? 'active' : ''}`}
               onClick={() => setActiveTab('search')}
             >
               {t.elasticLibrary}
             </button>
-            <button 
+            <button
               className={`tab-btn ${activeTab === 'sos' ? 'active' : ''}`}
               onClick={() => setActiveTab('sos')}
               style={{ borderLeft: '1px solid rgba(255,255,255,0.15)', paddingLeft: '15px' }}
@@ -616,17 +629,17 @@ function App() {
       {/* Main Tab Routing */}
       {activeTab === 'assess' && (
         <div className="dashboard-grid">
-          
+
           {/* User Profile Form Column */}
           <div className="glass-panel form-card">
             <h2 className="form-title">{t.profileTitle}</h2>
-            
+
             <form onSubmit={(e) => e.preventDefault()}>
-              
+
               <div className="form-group">
                 <label className="form-label">{t.age}</label>
-                <input 
-                  type="number" 
+                <input
+                  type="number"
                   className="input-field"
                   value={age}
                   onChange={(e) => setAge(e.target.value)}
@@ -638,7 +651,7 @@ function App() {
 
               <div className="form-group">
                 <label className="form-label">{t.hotspot}</label>
-                <select 
+                <select
                   className="select-field"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
@@ -651,7 +664,7 @@ function App() {
 
               <div className="form-group">
                 <label className="form-label">{t.condition}</label>
-                <select 
+                <select
                   className="select-field"
                   value={condition}
                   onChange={(e) => setCondition(e.target.value)}
@@ -668,15 +681,15 @@ function App() {
                   {symptomOptions.map(symptom => {
                     const isChecked = selectedSymptoms.includes(symptom);
                     return (
-                      <div 
-                        key={symptom} 
+                      <div
+                        key={symptom}
                         className={`checkbox-item ${isChecked ? 'checked' : ''}`}
                         onClick={() => handleSymptomChange(symptom)}
                       >
-                        <input 
-                           type="checkbox"
+                        <input
+                          type="checkbox"
                           checked={isChecked}
-                          onChange={() => {}} // handled by click on wrapper
+                          onChange={() => { }} // handled by click on wrapper
                         />
                         <span className="checkbox-label">{symptomTranslations[lang][symptom]}</span>
                       </div>
@@ -695,7 +708,7 @@ function App() {
 
           {/* AI recommendations + live AQI Column */}
           <div className="result-column">
-            
+
             {/* Live AQI Widget */}
             {liveAqi !== null && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1rem' }}>
@@ -767,7 +780,7 @@ function App() {
             {/* Assessment Result Dashboard */}
             {result ? (
               <div className="glass-panel assessment-container">
-                
+
                 {/* Result Title & Pulse Indicator */}
                 <div className="assessment-header">
                   <div className="risk-meter">
@@ -788,7 +801,7 @@ function App() {
 
                 {/* Actionable Recommendations List */}
                 <div className="section-label">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" /><path d="m9 12 2 2 4-4" /></svg>
                   {t.personalizedRecs}
                 </div>
                 <div className="recommendations-list">
@@ -802,19 +815,19 @@ function App() {
 
                 {/* Healthcare Action Center */}
                 <div className="healthcare-card">
-                  <div className="section-label" style={{ color: '#fff', marginBottom: '12px' }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                  <div className="section-label" style={{ color: 'var(--text-primary)', marginBottom: '12px' }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg>
                     {t.healthcareCenter}
                   </div>
 
                   {nearbyHospitals.length > 0 && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', margin: '12px 0' }}>
                       <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
-                        Closest Hospitals (Within 5-7km):
+                        Closest Hospitals:
                       </span>
                       <div style={{ maxHeight: '180px', overflowY: 'auto', paddingRight: '4px' }}>
                         {nearbyHospitals.map((h, i) => (
-                          <div 
+                          <div
                             key={i}
                             className={`hospital-item-card ${selectedHospital && selectedHospital.name === h.name ? 'active' : ''}`}
                             onClick={() => setSelectedHospital(h)}
@@ -822,7 +835,7 @@ function App() {
                             <div className="hospital-item-info">
                               <span className="hospital-item-name">{h.name}</span>
                               <span className="hospital-item-address">{h.address}</span>
-                              <span style={{ fontSize: '0.75rem', color: '#60a5fa', marginTop: '2px' }}>
+                              <span style={{ fontSize: '0.75rem', color: 'var(--accent-color)', marginTop: '2px' }}>
                                 👨‍⚕️ {h.doctor}
                               </span>
                             </div>
@@ -867,7 +880,7 @@ function App() {
 
                       {/* Navigation Buttons */}
                       <div className="action-btn-row">
-                        <a 
+                        <a
                           href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedHospital.name + ' Delhi')}`}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -875,8 +888,8 @@ function App() {
                         >
                           {t.locateHospital}
                         </a>
-                        
-                        <a 
+
+                        <a
                           href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedHospital.doctor + ' near ' + location)}`}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -885,7 +898,7 @@ function App() {
                           {t.findPulmonologist}
                         </a>
 
-                        <a 
+                        <a
                           href="tel:102"
                           className="action-sub-btn emergency"
                           onClick={(e) => {
@@ -915,7 +928,7 @@ function App() {
           </div>
         </div>
       )}
-      
+
       {activeTab === 'search' && (
         /* Elastic Search Knowledge Base Center */
         <div className="glass-panel search-container">
@@ -927,9 +940,9 @@ function App() {
           </div>
 
           <form onSubmit={handleSearch} className="search-box-row">
-            <input 
-              type="text" 
-              className="input-field search-input" 
+            <input
+              type="text"
+              className="input-field search-input"
               placeholder={t.searchPlaceholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -978,7 +991,7 @@ function App() {
                 {lang === 'EN' ? '— Elastic + Gemini RAG' : '— इलास्टिक + जेमिनी RAG'}
               </span>
               {kbChatHistory.length > 0 && (
-                <button 
+                <button
                   onClick={() => setKbChatHistory([])}
                   style={{ marginLeft: 'auto', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.75rem' }}
                 >
@@ -1006,10 +1019,21 @@ function App() {
             <div className="kb-chat-messages">
               {kbChatHistory.map((msg, i) => (
                 <div key={i} className={`kb-chat-bubble ${msg.sender}`}>
-                  {msg.sender === 'user'
-                    ? <div className="kb-bubble-text">{msg.text}</div>
-                    : <div className="kb-bubble-text markdown-body" dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.text) }} />
-                  }
+                  {msg.sender === 'user' ? (
+                    <div className="kb-bubble-text">{msg.text}</div>
+                  ) : (
+                    <div className="kb-bubble-text markdown-body" dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.text) }} />
+                  )}
+                  {msg.sources && msg.sources.length > 0 && (
+                    <div className="kb-chat-sources" style={{ marginTop: '8px', fontSize: '0.8rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '6px' }}>
+                      <strong>Sources:</strong>
+                      <ul style={{ margin: '4px 0 0', paddingLeft: '16px', textAlign: 'left' }}>
+                        {msg.sources.map((src, sIdx) => (
+                          <li key={sIdx}>{src.source} - {src.condition}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               ))}
               {kbChatLoading && (
@@ -1045,7 +1069,7 @@ function App() {
               🚨 {lang === 'EN' ? "SOS Emergency Room" : "एसओएस आपातकालीन कक्ष"}
             </h2>
             <p className="search-description">
-              {lang === 'EN' 
+              {lang === 'EN'
                 ? "Immediate medical assistance support contacts, location coordinate templates, and smog safety protocols for Delhi."
                 : "दिल्ली के लिए तत्काल चिकित्सा सहायता संपर्क, स्थान निर्देशांक टेम्पलेट और स्मॉग सुरक्षा प्रोटोकॉल।"}
             </p>
@@ -1058,30 +1082,30 @@ function App() {
                 {lang === 'EN' ? "RESPIRATORY EMERGENCY" : "श्वसन आपातकाल"}
               </span>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                {lang === 'EN' 
+                {lang === 'EN'
                   ? "Clicking below calls the National Ambulance Service (102) to request immediate transport with oxygen support."
                   : "नीचे क्लिक करने से ऑक्सीजन सहायता के साथ तत्काल परिवहन का अनुरोध करने के लिए राष्ट्रीय एम्बुलेंस सेवा (102) को कॉल किया जाता है।"}
               </p>
-              <button 
+              <button
                 className="sos-pulsing-btn"
                 onClick={() => alert("SOS Emergency Call Triggered! Simulating call to National Ambulance Service (102)...")}
               >
                 🔴 SOS (102)
               </button>
-              
+
               <div style={{ width: '100%', marginTop: '1.5rem', background: 'rgba(255, 255, 255, 0.03)', padding: '1rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--text-light)', display: 'block', marginBottom: '6px' }}>
                   📋 {lang === 'EN' ? "Emergency Message Template" : "आपातकालीन संदेश टेम्पलेट"}
                 </span>
-                <textarea 
-                  className="input-field" 
-                  readOnly 
+                <textarea
+                  className="input-field"
+                  readOnly
                   rows="3"
                   style={{ fontSize: '0.8rem', background: 'rgba(0,0,0,0.2)', resize: 'none', fontFamily: 'monospace' }}
                   value={`EMERGENCY: I am experiencing severe respiratory distress in Delhi. Current location hotspot: ${location}. Please dispatch CATS/Ambulance with oxygen support.`}
                 />
-                <button 
-                  className="action-sub-btn" 
+                <button
+                  className="action-sub-btn"
                   style={{ width: '100%', marginTop: '8px', padding: '6px 12px', fontSize: '0.8rem' }}
                   onClick={() => {
                     navigator.clipboard.writeText(`EMERGENCY: I am experiencing severe respiratory distress in Delhi. Current location hotspot: ${location}. Please dispatch CATS/Ambulance with oxygen support.`);
@@ -1099,7 +1123,7 @@ function App() {
                 <h3 className="section-label" style={{ color: '#fff', marginBottom: '10px' }}>
                   📞 {t.sosEmergencyTitle}
                 </h3>
-                
+
                 <div className="emergency-directory-grid">
                   <div className="emergency-contact-card">
                     <div className="emergency-contact-info">
@@ -1165,8 +1189,8 @@ function App() {
       )}
 
       {/* Floating Chat Button */}
-      <button 
-        className="chat-fab-btn" 
+      <button
+        className="chat-fab-btn"
         onClick={() => setChatOpen(!chatOpen)}
         title="Chat with BreatheWise Agent"
       >
@@ -1189,7 +1213,7 @@ function App() {
           <div className="chat-messages-container" ref={chatContainerRef}>
             {chatHistory.map((msg, i) => (
               <div key={i} className={`chat-message-bubble ${msg.sender}`}>
-                {msg.sender === 'user' 
+                {msg.sender === 'user'
                   ? <div className="chat-bubble-text">{msg.text}</div>
                   : <div className="chat-bubble-text markdown-body" dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.text) }} />
                 }
@@ -1206,9 +1230,9 @@ function App() {
           </div>
 
           <form onSubmit={handleSendChatMessage} className="chat-input-row">
-            <input 
-              type="text" 
-              className="input-field chat-input-field" 
+            <input
+              type="text"
+              className="input-field chat-input-field"
               placeholder={lang === 'EN' ? "Type a message..." : "एक संदेश लिखें..."}
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}

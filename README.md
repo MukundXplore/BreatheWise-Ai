@@ -7,7 +7,7 @@
     Real-time AQI monitoring · Personalized health risk assessments · RAG-powered medical recommendations
   </p>
   <p align="center">
-    <em>Built for the GDG Build with AI Hackathon 2026</em>
+    <em>Fork of BreatheWise AI built for the <a href="https://www.commudle.com/communities/gdgcloudnd/events/build-with-ai-b0efe184-2b16-41fb-9d5a-1bd30de45a65">Build with AI Buildathon - GDG Cloud New Delhi</a></em>
   </p>
 </p>
 
@@ -56,7 +56,7 @@ BreatheWise AI is an intelligent respiratory health assistant designed for Delhi
 │  ai_service.py ─── Gemini AI    │
 │  elastic_service.py ─── RAG     │
 └──────┬──────────────┬───────────┘
-       │              │
+               │
        ▼              ▼
 ┌──────────────┐  ┌──────────────────┐
 │ Elasticsearch│  │  Gemini API      │
@@ -84,7 +84,7 @@ BreatheWise AI is an intelligent respiratory health assistant designed for Delhi
 ## 📁 Project Structure
 
 ```
-GDG-build-with-AI/
+BreatheWise-Ai/
 ├── backend/
 │   ├── app/
 │   │   ├── __init__.py             # Package initializer
@@ -110,8 +110,7 @@ GDG-build-with-AI/
 │
 ├── run_servers.ps1                 # PowerShell helper to launch both servers
 ├── .gitignore
-├── REMAINING_TASKS.md              # Roadmap of enhancement ideas
-└── README.md                       # ← You are here
+└── README.md                       # Main README
 ```
 
 ---
@@ -125,12 +124,9 @@ GDG-build-with-AI/
 - _(Optional)_ A [Gemini API key](https://aistudio.google.com/app/apikey) for AI-powered assessments
 - _(Optional)_ Elasticsearch Cloud or local instance for full RAG
 
-### 1. Clone the Repository
+### 1. Clone or Navigate to the Directory
 
-```bash
-git clone https://github.com/your-username/GDG-build-with-AI.git
-cd GDG-build-with-AI
-```
+Ensure you are in the project root directory `BreatheWise-Ai/`.
 
 ### 2. Backend Setup
 
@@ -168,6 +164,8 @@ OPENWEATHER_API_KEY=your_openweather_key
 
 ### 4. Frontend Setup
 
+From the project root:
+
 ```bash
 cd frontend
 npm install
@@ -177,16 +175,18 @@ npm install
 
 **Option A — PowerShell helper script (Windows):**
 
+Run this from the project root directory:
+
 ```powershell
 .\run_servers.ps1
 ```
 
-**Option B — Manual (two terminals):**
+**Option B — Manual (two terminals from project root):**
 
 ```bash
 # Terminal 1 — Backend (Flask on port 8000)
 cd backend
-.venv\Scripts\activate
+.venv\Scripts\activate # On Windows (or 'source .venv/bin/activate' on macOS/Linux)
 python -m flask --app app.main run --port 8000 --debug
 
 # Terminal 2 — Frontend (React/Vite on port 5173)
@@ -256,8 +256,8 @@ If you have Elasticsearch credentials, you can enable full RAG retrieval:
 
 ```bash
 cd backend
-.venv\Scripts\activate
-python ..\elastic\index_setup.py
+.venv\Scripts\activate # On Windows (or 'source .venv/bin/activate' on macOS/Linux)
+python ../elastic/index_setup.py
 ```
 
 This creates three indexes (`health_guidelines`, `respiratory_guidelines`, `aqi_data`) and seeds them with 16 curated medical documents covering Asthma, COPD, Bronchitis, Diabetes co-morbidity, GRAP emergency protocols, and general AQI advisories.
@@ -303,6 +303,24 @@ Delhi (General) · Dwarka · Connaught Place · Okhla · Anand Vihar · Delhi Un
 
 ---
 
+## 🔮 Future Roadmap & Improvements
+
+- **Get Real WAQI API Key**: Right now the app uses simulated fallback data or a demo token. We need to register on the WAQI website, get a proper API key, and put it in `.env` to fetch actual live air quality data.
+- **Add Google Maps / Leaflet**: Want to add a map component to show where the user is in Delhi and mark the closest hospitals on the map screen.
+- **Upload More Medical Files**: Need to add more seed documents to the Elasticsearch index (RAG database), especially guidelines about Delhi winter smog and how to handle patients with both asthma and diabetes.
+- **Fix Mobile UI**: The styling looks good on desktop, but we need to fix the alignment, card stacking, and menu dropdowns on smaller phone screens.
+- **Auto-Detect Live Location**: Ask the user for GPS permission in the browser so the app can automatically find their location and load the local AQI, instead of making them pick their Delhi zone from a dropdown every time.
+
+---
+
+## 👥 Contributors
+
+- **Misbah** ([@misbahGitPilot44](https://github.com/misbahGitPilot44))
+- **Wandering Coder** ([@wanderingCoder95](https://github.com/wanderingCoder95))
+- **Mukund** ([@mukundxplore](https://github.com/mukundxplore))
+
+---
+
 ## 📄 License
 
-This project was built for the **GDG Build with AI Hackathon 2026**.
+This project is a fork of BreatheWise AI, built for the **[Build with AI Buildathon - GDG Cloud New Delhi](https://www.commudle.com/communities/gdgcloudnd/events/build-with-ai-b0efe184-2b16-41fb-9d5a-1bd30de45a65)**.
