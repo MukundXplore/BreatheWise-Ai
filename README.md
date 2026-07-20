@@ -315,9 +315,9 @@ Delhi (General) · Dwarka · Connaught Place · Okhla · Anand Vihar · Delhi Un
 
 ## 👥 Contributors
 
-- **Misbah** ([@misbahGitPilot44](https://github.com/misbahGitPilot44))
-- **Wandering Coder** ([@wanderingCoder95](https://github.com/wanderingCoder95))
-- **Mukund** ([@mukundxplore](https://github.com/mukundxplore))
+- **Misbah Ul Islam** ([@misbahGitPilot44](https://github.com/misbahGitPilot44))
+- **Farhan Akhlaq** ([@wanderingCoder95](https://github.com/wanderingCoder95))
+- **Mukund Prasad** ([@mukundxplore](https://github.com/mukundxplore))
 
 ---
 
